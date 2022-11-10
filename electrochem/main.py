@@ -22,14 +22,21 @@ def unpackDir(folder):
 # Naming Convention --> experiment details (TODO: guessing sucks --> regex or experiment JSON/YAML)
 def nameToDetails(fileName):
     scanRate = re.findall('[0-9]+', fileName)[0]
+    # test scan rate? 
+
 
     for guess in ['GC','PT']:
         if guess in fileName:
             typeWorkingElectrode = guess
+        else:
+            typeElectrolyte = 'Unknown'
 
     for guess in ['Ferro','Ferri','KCL','H2S04']:
         if guess in fileName:
             typeElectrolyte = guess
+        else:
+            typeElectrolyte = 'Unknown'
+
 
     return [scanRate,typeWorkingElectrode,typeElectrolyte]
 
@@ -326,19 +333,22 @@ def analyzeCapacitance(inputFile,**optionalParams):
 
 if __name__ == "__main__":
 
-    demoFile = 'GC_Ferri_NS/50mvs.mpr'
-    results = analyzeUnstirredFile(demoFile,usableCycle = 2)
-    fig = generateBokehFigure(demoFile,usableCycle = 2)
-
-    print(results)
-    labelSource = ColumnDataSource(data=dict(V=[results['Ep'],results['Em'],results['Ea']],
-                                    I=[results['Ip']/2,results['Im']/2,0.005],
-                                    names=['Epa', 'Epc','Ea']))
-
-    labels = LabelSet(x='V', y='I', text='names',x_offset=5, 
-                      y_offset=5, source=labelSource, render_mode='canvas')
-
-    addTypicalMarks(fig,results)
-    fig.add_layout(labels)
+    demoFile =  '/Users/ethanmuchnik/Desktop/project-3/Data/CAT-WE_KOH_AGCL-RE/CV_PlatedWE_PTCE_AGCLRE_100mvs_C01.mpr'
+    fig = generateBokehFigure(demoFile)
     show(fig)
+
+    # results = analyzeUnstirredFile(demoFile,usableCycle = 2)
+    # fig = generateBokehFigure(demoFile,usableCycle = 2)
+
+    # print(results)
+    # labelSource = ColumnDataSource(data=dict(V=[results['Ep'],results['Em'],results['Ea']],
+    #                                 I=[results['Ip']/2,results['Im']/2,0.005],
+    #                                 names=['Epa', 'Epc','Ea']))
+
+    # labels = LabelSet(x='V', y='I', text='names',x_offset=5, 
+    #                   y_offset=5, source=labelSource, render_mode='canvas')
+
+    # addTypicalMarks(fig,results)
+    # fig.add_layout(labels)
+    # show(fig)
 
