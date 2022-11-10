@@ -42,6 +42,93 @@ def nameToDetails(fileName):
 
 
 # Works for a range of desired CV plots
+
+def analyzeImpedence(fileName):
+    # Convert mpr file --> CSV and clean up data
+    ecf.to_csv(fileName, csv_fn="workingData.csv")
+    relevantData = pd.read_csv("workingData.csv")
+    relevantData = relevantData.dropna()
+
+    realElement = relevantData['Re(Z)'].to_numpy()
+    imElement = relevantData['-Im(Z)'].to_numpy()
+
+    #simplistic
+    resistance = np.min(realElement)
+
+    return resistance
+
+
+def generateImpedenceFigure(dataInput,**optionalParams):
+    
+    # Appendable Parameters
+    defaultParams = {'usableCycle': 'All' ,'colorList': ['red','green','blue','purple','pink','brown','black'],
+                     'inputFig':None, 'specificLabels': False,'title':'Impedence Spectroscopy'}
+    workingParams = { **defaultParams, **optionalParams}
+
+
+    # Generate Figure or append existing
+    if workingParams['inputFig'] == None:
+        fig = figure(width=1000, height=500)
+    else:
+        fig = workingParams['inputFig']
+
+    # Default --> CV labeled by scan rate: make modifiable later
+    fig.xaxis.axis_label = "Re(Z)"
+    fig.yaxis.axis_label = "-Im(Z)"
+    
+
+    # Can input single file or file array or folder name
+    if isinstance(dataInput, str):
+        if 'mpr' in dataInput:
+            fileList = [dataInput]
+        else:
+            # Create list of full paths if you input a folder name
+            fileList = unpackDir(dataInput)
+    else:
+        fileList = dataInput
+    
+
+    # Add E-I curve for each file specified
+    loopCount = 0 
+    for fileName in fileList:
+        
+        [scanRate,typeWorkingElectrode,typeElectrolyte]=nameToDetails(fileName)
+            
+        if workingParams['specificLabels'] == True:
+            labelText = '{} mv/s, {} WE'.format(scanRate,typeWorkingElectrode)
+        else:
+            labelText = '{} mv/s'.format(scanRate)
+
+        #-----
+            
+        # Convert mpr file --> CSV and clean up data
+        ecf.to_csv(fileName, csv_fn="workingData.csv")
+        relevantData = pd.read_csv("workingData.csv")
+        relevantData = relevantData.dropna()
+        
+        if workingParams['usableCycle'] != 'All':
+            relevantData = relevantData[relevantData['cycle number'] == workingParams['usableCycle']]
+
+        fig.scatter(relevantData['Re(Z)'], relevantData['-Im(Z)'])
+            
+        loopCount += 1
+
+    
+    # Specify figure legend
+    #fig.legend.location = "top_left"
+    #fig.legend.click_policy = "hide"
+
+
+    fig.title.text = workingParams['title']
+    fig.title.align = "center"
+    fig.title.text_font_size = "25px"
+
+
+    return fig
+
+
+
+# Works for a range of desired CV plots
 def generateBokehFigure(dataInput,**optionalParams):
     
     # Appendable Parameters
@@ -333,8 +420,9 @@ def analyzeCapacitance(inputFile,**optionalParams):
 
 if __name__ == "__main__":
 
-    demoFile =  '/Users/ethanmuchnik/Desktop/project-3/Data/CAT-WE_KOH_AGCL-RE/CV_PlatedWE_PTCE_AGCLRE_100mvs_C01.mpr'
-    fig = generateBokehFigure(demoFile)
+    demoFile =  '/Users/ethanmuchnik/Desktop/project-3/Data/OER/impedence.mpr'
+    fig = generateImpedenceFigure(demoFile)
+
     show(fig)
 
     # results = analyzeUnstirredFile(demoFile,usableCycle = 2)
