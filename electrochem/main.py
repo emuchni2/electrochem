@@ -27,7 +27,7 @@ def nameToDetails(fileName):
         if guess in fileName:
             typeWorkingElectrode = guess
 
-    for guess in ['Ferro','Ferri','KCL']:
+    for guess in ['Ferro','Ferri','KCL','H2S04']:
         if guess in fileName:
             typeElectrolyte = guess
 
